@@ -84,6 +84,9 @@ contract NaiveReceiverPool is Multicall, IERC3156FlashLender {
     }
 
     function _msgSender() internal view override returns (address) {
+        // @audit-issue we can craft the txn that comes from trusted forwarder and since we control the msg.data,
+        // we can make sure the last 20 bytes of msg.data are any address of the account that we wish to control
+        // That way we can impersonate accounts and perform the withdraw function on their behalf.
         if (msg.sender == trustedForwarder && msg.data.length >= 20) {
             return address(bytes20(msg.data[msg.data.length - 20:]));
         } else {
